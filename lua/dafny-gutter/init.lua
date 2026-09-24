@@ -9,7 +9,7 @@ local defaults = {
 		error = "✗",
 		pending = "…",
 		skipped = "?",
-		connector = "│",
+		connector = "⎹ ",
 	},
 }
 

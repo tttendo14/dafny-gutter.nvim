@@ -22,11 +22,11 @@ local highlight_suffixes = {
 local defaults = {
 	enabled = true,
 	symbols = {
-		verified = "✓",
-		error = "✗",
-		pending = "…",
+		verified = "☑",
+		error = "☒",
+		pending = "~",
 		skipped = "?",
-		connector = " │",
+		connector = "┃",
 	},
 	animation = {
 		enabled = true,

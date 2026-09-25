@@ -3,6 +3,7 @@ local M = {}
 local namespace = vim.api.nvim_create_namespace("dafny_verification_gutter")
 local animation_timer
 local animation_phase = 0
+local animation_elapsed = 0
 local animated_buffers = {}
 
 local tau = 2 * math.pi
@@ -33,6 +34,7 @@ local defaults = {
 		interval = 90,
 		wavelength = 12,
 		amplitude = 0.8,
+		blink_interval = 450,
 	},
 }
 
@@ -84,6 +86,13 @@ local function connector_highlight(kind, line)
 	return ("DafnyGutterConnector%s%02d"):format(highlight_suffixes[kind], (line - 1) % wave_steps())
 end
 
+local function marker_highlight(kind, fallback)
+	if options.animation.enabled and kind == "error" then
+		return "DafnyGutterErrorBlink"
+	end
+	return fallback
+end
+
 local function blend(color, target, amount)
 	local red = math.floor(color / 0x10000) % 0x100
 	local green = math.floor(color / 0x100) % 0x100
@@ -116,15 +125,30 @@ local function update_connector_highlights()
 	local target = (0.299 * red + 0.587 * green + 0.114 * blue) < 128 and 0xffffff or 0x000000
 	local amplitude = math.max(0, math.min(1, tonumber(options.animation.amplitude) or defaults.animation.amplitude))
 	local steps = wave_steps()
+	local blink_interval = math.max(
+		16,
+		math.floor(tonumber(options.animation.blink_interval) or defaults.animation.blink_interval)
+	)
 
 	for kind, style in pairs(styles()) do
 		local base = resolved_foreground(style.highlight, fallback_colors[kind])
-		for slot = 0, steps - 1 do
-			local wave = math.sin(tau * (slot - animation_phase) / steps)
-			local group = ("DafnyGutterConnector%s%02d"):format(highlight_suffixes[kind], slot)
-			local color = wave >= 0 and blend(base, target, amplitude * wave)
-				or blend(base, background, amplitude * 0.35 * -wave)
-			vim.api.nvim_set_hl(0, group, { fg = color })
+		if kind == "error" then
+			local light_red = blend(base, 0xffffff, amplitude * 0.55)
+			local dark_red = blend(base, 0x000000, amplitude * 0.45)
+			local color = math.floor(animation_elapsed / blink_interval) % 2 == 0 and light_red or dark_red
+			vim.api.nvim_set_hl(0, "DafnyGutterErrorBlink", { fg = color })
+			for slot = 0, steps - 1 do
+				local group = ("DafnyGutterConnector%s%02d"):format(highlight_suffixes[kind], slot)
+				vim.api.nvim_set_hl(0, group, { fg = color })
+			end
+		else
+			for slot = 0, steps - 1 do
+				local wave = math.sin(tau * (slot - animation_phase) / steps)
+				local group = ("DafnyGutterConnector%s%02d"):format(highlight_suffixes[kind], slot)
+				local color = wave >= 0 and blend(base, target, amplitude * wave)
+					or blend(base, background, amplitude * 0.35 * -wave)
+				vim.api.nvim_set_hl(0, group, { fg = color })
+			end
 		end
 	end
 end
@@ -146,8 +170,9 @@ local function sync_animation()
 		return
 	end
 
-	update_connector_highlights()
 	local interval = math.max(16, math.floor(tonumber(options.animation.interval) or defaults.animation.interval))
+	animation_elapsed = 0
+	update_connector_highlights()
 	animation_timer = (vim.uv or vim.loop).new_timer()
 	animation_timer:start(interval, interval, vim.schedule_wrap(function()
 		if not options.enabled or not next(animated_buffers) then
@@ -155,6 +180,7 @@ local function sync_animation()
 			return
 		end
 		animation_phase = (animation_phase + 1) % wave_steps()
+		animation_elapsed = animation_elapsed + interval
 		update_connector_highlights()
 		pcall(vim.cmd, "redraw")
 	end))
@@ -184,6 +210,7 @@ local function render(result)
 
 	local previous_kind
 	local connector_count = 0
+	local has_blinking_error = false
 	local max_line = vim.api.nvim_buf_line_count(bufnr)
 	for index, status in ipairs(line_statuses) do
 		if index > max_line then
@@ -212,18 +239,22 @@ local function render(result)
 		end
 
 		if style and symbol then
+			if previous_kind == "error" then
+				has_blinking_error = true
+			end
 			if is_connector then
 				connector_count = connector_count + 1
 			end
 			vim.api.nvim_buf_set_extmark(bufnr, namespace, index - 1, 0, {
 				sign_text = symbol,
-				sign_hl_group = is_connector and connector_highlight(previous_kind, index) or style.highlight,
+				sign_hl_group = is_connector and connector_highlight(previous_kind, index)
+					or marker_highlight(kind, style.highlight),
 				priority = 20,
 			})
 		end
 	end
 
-	animated_buffers[bufnr] = connector_count > 0 or nil
+	animated_buffers[bufnr] = (connector_count > 0 or has_blinking_error) and true or nil
 	sync_animation()
 end
 

@@ -10,7 +10,7 @@ It renders Dafny's per-line verification status in the sign column:
 | `✗` | Verification or resolution failure |
 | `…` | Scheduled or verifying |
 | `?` | Skipped |
-| `│` | Connector, colored like the preceding status |
+| `│` | Connector, colored like the preceding status with a subtle animated wave |
 
 The connector fills the sign column between status changes, giving a compact view of which verification result applies to each block of code.
 
@@ -67,10 +67,18 @@ require("dafny-gutter").setup({
     error = "✗",
     pending = "…",
     skipped = "?",
-    connector = "│",
+    connector = " │",
+  },
+  animation = {
+    enabled = true,
+    interval = 90,  -- milliseconds between frames
+    wavelength = 12, -- lines per wave
+    amplitude = 0.28, -- brightness shift, from 0 to 1
   },
 })
 ```
+
+The leading space in the connector centers it under wide check and cross glyphs. The animation preserves the status color while sending a gentle sine-wave pulse down the connector. Set `animation.enabled = false` for a static connector.
 
 The plugin links its highlight groups to your colorscheme's diagnostics. Override `DafnyGutterVerified`, `DafnyGutterError`, `DafnyGutterPending`, or `DafnyGutterSkipped` to customize them.
 

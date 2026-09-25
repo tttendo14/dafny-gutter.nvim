@@ -8,9 +8,9 @@ It renders Dafny's per-line verification status in the sign column:
 | --- | --- |
 | Green `●` | Verified |
 | Red `●` | Verification or resolution failure |
-| Yellow `●` | Scheduled or verifying |
-| Muted `●` | Skipped |
-| Pulsing `●` | Connector, colored like the preceding status |
+| Yellow `~` | Scheduled or verifying |
+| Muted `?` | Skipped |
+| Pulsing `┃` | Connector, colored like the preceding status |
 
 The connector fills the sign column between status changes, giving a compact view of which verification result applies to each block of code.
 
@@ -65,9 +65,9 @@ require("dafny-gutter").setup({
   symbols = {
     verified = "●",
     error = "●",
-    pending = "●",
-    skipped = "●",
-    connector = "●",
+    pending = "~",
+    skipped = "?",
+    connector = "┃",
   },
   animation = {
     enabled = true,
@@ -78,7 +78,7 @@ require("dafny-gutter").setup({
 })
 ```
 
-The default uses one solid, single-cell circle throughout; color communicates verification status. The animation preserves that status color while sending a gentle sine-wave pulse through continuation dots. Set `animation.enabled = false` for static dots.
+Verified and failed lines use a solid, single-cell circle whose color communicates status. The animation preserves that status color while sending a gentle sine-wave pulse through the connecting pipe. Set `animation.enabled = false` for a static connector.
 
 The plugin links its highlight groups to your colorscheme's diagnostics. Override `DafnyGutterVerified`, `DafnyGutterError`, `DafnyGutterPending`, or `DafnyGutterSkipped` to customize them.
 

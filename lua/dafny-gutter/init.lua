@@ -24,9 +24,9 @@ local defaults = {
 	symbols = {
 		verified = "●",
 		error = "●",
-		pending = "●",
-		skipped = "●",
-		connector = "●",
+		pending = "~",
+		skipped = "?",
+		connector = "┃",
 	},
 	animation = {
 		enabled = true,

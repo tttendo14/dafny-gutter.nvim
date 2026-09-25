@@ -32,7 +32,7 @@ local defaults = {
 		enabled = true,
 		interval = 90,
 		wavelength = 12,
-		amplitude = 0.28,
+		amplitude = 0.8,
 	},
 }
 
@@ -120,9 +120,11 @@ local function update_connector_highlights()
 	for kind, style in pairs(styles()) do
 		local base = resolved_foreground(style.highlight, fallback_colors[kind])
 		for slot = 0, steps - 1 do
-			local wave = (math.sin(tau * (slot - animation_phase) / steps) + 1) / 2
+			local wave = math.sin(tau * (slot - animation_phase) / steps)
 			local group = ("DafnyGutterConnector%s%02d"):format(highlight_suffixes[kind], slot)
-			vim.api.nvim_set_hl(0, group, { fg = blend(base, target, amplitude * wave) })
+			local color = wave >= 0 and blend(base, target, amplitude * wave)
+				or blend(base, background, amplitude * 0.35 * -wave)
+			vim.api.nvim_set_hl(0, group, { fg = color })
 		end
 	end
 end

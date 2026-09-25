@@ -73,12 +73,12 @@ require("dafny-gutter").setup({
     enabled = true,
     interval = 90,  -- milliseconds between frames
     wavelength = 12, -- lines per wave
-    amplitude = 0.28, -- brightness shift, from 0 to 1
+    amplitude = 0.8, -- contrast strength, from 0 to 1
   },
 })
 ```
 
-Verified and failed lines use a solid, single-cell circle whose color communicates status. The animation preserves that status color while sending a gentle sine-wave pulse through the connecting pipe. Set `animation.enabled = false` for a static connector.
+Verified and failed lines use a solid, single-cell circle whose color communicates status. The animation preserves that status color while sending a high-contrast sine-wave pulse with a bright white accent through the connecting pipe. Set `animation.enabled = false` for a static connector.
 
 The plugin links its highlight groups to your colorscheme's diagnostics. Override `DafnyGutterVerified`, `DafnyGutterError`, `DafnyGutterPending`, or `DafnyGutterSkipped` to customize them.
 

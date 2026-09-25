@@ -4,13 +4,13 @@ Verification-status signs for [Dafny](https://dafny.org/) in Neovim.
 
 It renders Dafny's per-line verification status in the sign column:
 
-| Symbol | Meaning |
+| Marker | Meaning |
 | --- | --- |
-| `☑` | Verified |
-| `☒` | Verification or resolution failure |
-| `~` | Scheduled or verifying |
-| `?` | Skipped |
-| `┃` | Connector, colored like the preceding status with a subtle animated wave |
+| Green `●` | Verified |
+| Red `●` | Verification or resolution failure |
+| Yellow `●` | Scheduled or verifying |
+| Muted `●` | Skipped |
+| Pulsing `●` | Connector, colored like the preceding status |
 
 The connector fills the sign column between status changes, giving a compact view of which verification result applies to each block of code.
 
@@ -63,11 +63,11 @@ Defaults:
 require("dafny-gutter").setup({
   enabled = true,
   symbols = {
-    verified = "☑",
-    error = "☒",
-    pending = "~",
-    skipped = "?",
-    connector = "┃",
+    verified = "●",
+    error = "●",
+    pending = "●",
+    skipped = "●",
+    connector = "●",
   },
   animation = {
     enabled = true,
@@ -78,7 +78,7 @@ require("dafny-gutter").setup({
 })
 ```
 
-The default symbols are one cell wide in monospaced terminals, so every marker and connector occupies the same position. The animation preserves the status color while sending a gentle sine-wave pulse down the connector. Set `animation.enabled = false` for a static connector.
+The default uses one solid, single-cell circle throughout; color communicates verification status. The animation preserves that status color while sending a gentle sine-wave pulse through continuation dots. Set `animation.enabled = false` for static dots.
 
 The plugin links its highlight groups to your colorscheme's diagnostics. Override `DafnyGutterVerified`, `DafnyGutterError`, `DafnyGutterPending`, or `DafnyGutterSkipped` to customize them.
 

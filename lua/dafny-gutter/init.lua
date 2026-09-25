@@ -22,11 +22,11 @@ local highlight_suffixes = {
 local defaults = {
 	enabled = true,
 	symbols = {
-		verified = "☑",
-		error = "☒",
-		pending = "~",
-		skipped = "?",
-		connector = "┃",
+		verified = "●",
+		error = "●",
+		pending = "●",
+		skipped = "●",
+		connector = "●",
 	},
 	animation = {
 		enabled = true,
@@ -191,20 +191,25 @@ local function render(result)
 		local kind = status_kind(status)
 		local style = kind and styles()[kind] or nil
 		local symbol
+		local is_connector = false
 
 		if style then
-			symbol = (kind ~= previous_kind or is_explicit_failure(status)) and style.symbol
-				or options.symbols.connector
+			if kind ~= previous_kind or is_explicit_failure(status) then
+				symbol = style.symbol
+			else
+				symbol = options.symbols.connector
+				is_connector = true
+			end
 			previous_kind = kind
 		elseif previous_kind and has_later_status[index] then
 			style = styles()[previous_kind]
 			symbol = options.symbols.connector
+			is_connector = true
 		else
 			previous_kind = nil
 		end
 
 		if style and symbol then
-			local is_connector = symbol == options.symbols.connector
 			if is_connector then
 				connector_count = connector_count + 1
 			end
